@@ -27,6 +27,7 @@ const SuccessMessage = ({payment_id, checkout_url}: StepProps) => {
 	useEffect(() => {
     if (seconds <= 0) {
 			window.location.href = checkout_url;
+			return
 		}
 
     const timer = setInterval(() => {
@@ -58,7 +59,7 @@ const SuccessMessage = ({payment_id, checkout_url}: StepProps) => {
         platform. If you ever need support, please feel free to email us at
         support@shinigami.asia
       </p>
-      <div className="flex items-center mt-6">
+      <div className="flex items-center mt-6 text-sm">
 					<p>You will be redirected to the payment page in a few seconds, please wait ({seconds})</p>
       </div>
     </motion.section>
