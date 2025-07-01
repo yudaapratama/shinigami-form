@@ -26,7 +26,7 @@ const FinalStep = ({ yearly, plan, addOns, goTo }: StepProps) => {
       break;
   }
 
-  const filteredAddOns = addOns.filter((addOn) => addOn.checked === true);
+  const filteredAddOns = addOns?.filter((addOn) => addOn.checked === true);
 
   const totalAddOnsPrice = filteredAddOns?.reduce(
     (acc, obj) => acc + obj.price,
@@ -44,7 +44,7 @@ const FinalStep = ({ yearly, plan, addOns, goTo }: StepProps) => {
           <div className="flex justify-between items-center">
             <div className="">
               <h4 className="font-semibold text-white md:text-lg">
-                {`${plan.charAt(0).toUpperCase() + plan.slice(1)} (${
+                {`${plan?.charAt(0).toUpperCase() + plan!.slice(1)} (${
                   yearly ? "Yearly" : "Monthly"
                 })`}
               </h4>
@@ -59,7 +59,7 @@ const FinalStep = ({ yearly, plan, addOns, goTo }: StepProps) => {
               yearly ? planPrice * 10 : planPrice
             }${yearly ? "/yr" : "/mo"}`}</p>
           </div>
-          {filteredAddOns.length > 0 && <Separator className="my-4" />}
+          {filteredAddOns!.length > 0 && <Separator className="my-4" />}
           {filteredAddOns?.map((addOn) => (
             <div
               className="flex justify-between items-center my-2"
@@ -79,8 +79,8 @@ const FinalStep = ({ yearly, plan, addOns, goTo }: StepProps) => {
           <p className="text-[#6fe79f] font-semibold md:text-lg">
             +$
             {yearly
-              ? planPrice * 10 + totalAddOnsPrice * 10
-              : planPrice + totalAddOnsPrice}
+              ? planPrice * 10 + totalAddOnsPrice! * 10
+              : planPrice + totalAddOnsPrice!}
             /{yearly ? "yr" : "mo"}
           </p>
         </div>

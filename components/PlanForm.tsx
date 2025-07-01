@@ -19,7 +19,7 @@ type Plan = "arcade" | "advanced" | "pro";
 
 const PlanForm = ({ updateForm, plan, yearly }: stepProps) => {
   const [yearlyUpdated, setYearlyUpdated] = useState(yearly);
-  const [planSelected, setPlanSelected] = useState<Plan>(plan);
+  const [planSelected, setPlanSelected] = useState<Plan>(plan!);
 
   const handleCheckedChange = (yearlyUpdated: boolean) => {
     setYearlyUpdated((prev) => !prev);

@@ -8,7 +8,7 @@ type stepProps = FormItems & {
 
 const AddonsForm = ({ addOns, yearly, updateForm }: stepProps) => {
   function handleCheckboxChange(addOnId: number, checked: boolean) {
-    const updatedAddOns = addOns.map((addOn) =>
+    const updatedAddOns = addOns?.map((addOn) =>
       addOn.id === addOnId ? { ...addOn, checked } : addOn
     );
     updateForm({ addOns: updatedAddOns });
@@ -20,7 +20,7 @@ const AddonsForm = ({ addOns, yearly, updateForm }: stepProps) => {
       description="Add-ons help enhance your gaming experience"
     >
       <div className="flex flex-col gap-3">
-        {addOns.map((addOn) => (
+        {addOns?.map((addOn) => (
           <div
             className={`border border-neutral-600 flex items-center gap-3 p-3 rounded-md ${
               addOn.checked ? "border-[#77f6aa] bg-neutral-900" : ""

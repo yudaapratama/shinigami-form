@@ -16,14 +16,14 @@ const SideBar = ({ currentStepIndex, goTo }: NavProps) => {
             </span>
             <button
               tabIndex={0}
-              onClick={() => goTo(0)}
+              onClick={() => goTo(1)}
               className={`text-sm ${
-                currentStepIndex === 0 ? "text-[#ffe666]" : "text-white"
+                currentStepIndex === 1 ? "text-[#ffe666]" : "text-white"
               } md:text-base`}
             >
               <RoughNotation
                 type="underline"
-                show={currentStepIndex === 0}
+                show={currentStepIndex === 1}
                 color="#ffe666"
               >
                 Your info
@@ -36,17 +36,17 @@ const SideBar = ({ currentStepIndex, goTo }: NavProps) => {
             </span>
             <button
               tabIndex={0}
-              onClick={() => goTo(1)}
+              onClick={() => goTo(2)}
               className={`text-sm ${
-                currentStepIndex === 1 ? "text-[#bd284d]" : "text-white"
+                currentStepIndex === 2 ? "text-[#bd284d]" : "text-white"
               } md:text-base`}
             >
               <RoughNotation
                 type="underline"
-                show={currentStepIndex === 1}
+                show={currentStepIndex === 2}
                 color="#bd284d"
               >
-                Select plan
+                Support info
               </RoughNotation>
             </button>
           </li>
@@ -56,17 +56,17 @@ const SideBar = ({ currentStepIndex, goTo }: NavProps) => {
             </span>
             <button
               tabIndex={0}
-              onClick={() => goTo(2)}
+              onClick={() => goTo(3)}
               className={`text-sm ${
-                currentStepIndex === 2 ? "text-[#E7B8FF]" : "text-white"
+                currentStepIndex === 3 ? "text-[#E7B8FF]" : "text-white"
               } md:text-base`}
             >
               <RoughNotation
                 type="underline"
-                show={currentStepIndex === 2}
+                show={currentStepIndex === 3}
                 color="#E7B8FF"
               >
-                Add-ons
+								Payment
               </RoughNotation>
             </button>
           </li>
@@ -76,14 +76,14 @@ const SideBar = ({ currentStepIndex, goTo }: NavProps) => {
             </span>
             <button
               tabIndex={0}
-              onClick={() => goTo(3)}
+              onClick={() => goTo(4)}
               className={`text-sm ${
-                currentStepIndex === 3 ? "text-[#6fe79f]" : "text-white"
+                currentStepIndex === 4 ? "text-[#6fe79f]" : "text-white"
               } md:text-base`}
             >
               <RoughNotation
                 type="underline"
-                show={currentStepIndex === 3}
+                show={currentStepIndex === 4}
                 color="#6fe79f"
               >
                 Summary

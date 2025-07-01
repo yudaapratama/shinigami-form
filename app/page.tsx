@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useMultiplestepForm } from "hooks/useMultiplestepForm";
 import { AnimatePresence } from "framer-motion";
+import { Loader } from "lucide-react";
 import UserInfoForm from "@/components/UserInfoForm";
-import PlanForm from "@/components/PlanForm";
-import AddonsForm from "@/components/AddonsForm";
-import FinalStep from "@/components/FinalStep";
+import SupportMessage from "@/components/SupportMessage";
+import Summary from "@/components/Summary";
 import SuccessMessage from "@/components/SuccessMessage";
 import SideBar from "@/components/SideBar";
+import Banner from "@/components/Banner";
+import PaymentMethod from "@/components/PaymentMethod";
 
 interface AddOn {
   id: number;
@@ -19,49 +21,66 @@ interface AddOn {
   price: number;
 }
 
+interface PaymentMethod {
+	id: number;
+	title: string;
+	subtitle: string;
+	value: string;
+}
+
 export type FormItems = {
   name: string;
   email: string;
-  phone: string;
-  plan: "arcade" | "advanced" | "pro";
-  yearly: boolean;
-  addOns: AddOn[];
+	userId: string;
+  plan?: "arcade" | "advanced" | "pro";
+	method?: 'qris' | 'dana';
+	addOns?: AddOn[];
+	yearly?: boolean
+  paymentMethod: PaymentMethod[];
+	message: string
 };
+
+export type Payment = {
+	checkout_url: string
+	payment_id: string
+}
+
+type ResponseData = {
+	success: boolean
+	message: string
+  data?: Payment
+}
 
 const initialValues: FormItems = {
   name: "",
   email: "",
-  phone: "",
-  plan: "arcade",
-  yearly: false,
-  addOns: [
+	userId: "",
+  paymentMethod: [
     {
       id: 1,
-      checked: true,
-      title: "Online Service",
-      subtitle: "Access to multiple games",
-      price: 1,
+			title: "QRIS",
+			subtitle: "Use QRIS for your payment",
+			value: "qris",
     },
     {
       id: 2,
-      checked: false,
-      title: "Large storage",
-      subtitle: "Extra 1TB of cloud save",
-      price: 2,
-    },
-    {
-      id: 3,
-      checked: false,
-      title: "Customizable Profile",
-      subtitle: "Custom theme on your profile",
-      price: 2,
+			title: "DANA",
+			subtitle: "Use DANA for your payment",
+			value: "dana",
     },
   ],
+	message: "-",
+	method: 'qris',
 };
 
 export default function Home() {
   const [formData, setFormData] = useState(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
+	const [paymentData, setPaymentData] = useState<Payment>({ checkout_url: '', payment_id: '' });
+
+	const [mail, setMail] = useState('');
+	const [loading, setLoading] = useState(false);
+
   const {
     previousStep,
     nextStep,
@@ -71,10 +90,11 @@ export default function Home() {
     steps,
     goTo,
     showSuccessMsg,
-  } = useMultiplestepForm(4);
+  } = useMultiplestepForm(5);
 
   function updateForm(fieldToUpdate: Partial<FormItems>) {
-    const { name, email, phone } = fieldToUpdate;
+    const { name, email } = fieldToUpdate;
+		setMail(email!);
 
     if (name && name.trim().length < 3) {
       setErrors((prevState) => ({
@@ -105,46 +125,83 @@ export default function Home() {
       }));
     }
 
-    if (phone && !/^[0-9]{10}$/.test(phone)) {
-      setErrors((prevState) => ({
-        ...prevState,
-        phone: "Please enter a valid 10-digit phone number",
-      }));
-    } else {
-      setErrors((prevState) => ({
-        ...prevState,
-        phone: "",
-      }));
-    }
-
     setFormData({ ...formData, ...fieldToUpdate });
   }
 
-  const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (Object.values(errors).some((error) => error)) {
-      return;
-    }
-    nextStep();
+  const handleOnSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
+		try {
+			setLoading(true)
+			e.preventDefault();
+			if (Object.values(errors).some((error) => error)) {
+				return;
+			}
+
+			if(currentStepIndex === 1) {
+				const response = await fetch(`https://api.shngm.io/v1/sys/get-user-by-email?email=${mail}`)
+				const json = await response.json()
+				
+				if(response.status === 404) {
+					setErrors((prevState) => ({
+						...prevState,
+						email: "Silakan masukkan email yang valid dan sudah terdaftar di platform kami.",
+					}));
+					return
+				}
+
+				setFormData((prev) => ({
+					...prev,
+					userId: json.data.user_id
+				}))
+			}
+
+			if(isLastStep) {
+				const request = await fetch(`/api/confirm`, { method: 'POST', body: JSON.stringify(formData) })
+				if(request.status !== 200) {
+					setErrors((prevState) => ({
+						...prevState,
+						confirmError: "Oh no, something went wrong. Please try again.",
+					}));
+					return
+				} else {
+					setErrors((prevState) => ({
+						...prevState,
+						confirmError: "",
+					}));
+				}
+
+				const json: ResponseData = await request.json()
+				setPaymentData({
+					...json.data!
+				})
+			}
+
+			nextStep();
+		} catch (error) {
+			console.error(error)
+		} finally {
+			setLoading(false)
+		}
+    
   };
 
   return (
     <div
       className={`flex justify-between ${
-        currentStepIndex === 1 ? "h-[600px] md:h-[500px]" : "h-[500px]"
+        currentStepIndex === 1 ? "min-h-[600px] md:min-h-[500px]" : "min-h-[500px]"
       } w-11/12 max-w-4xl relative m-1 rounded-lg border border-neutral-700 bg-[#262626] p-4`}
     >
-      {!showSuccessMsg ? (
-        <SideBar currentStepIndex={currentStepIndex} goTo={goTo} />
-      ) : (
+      {showSuccessMsg || currentStepIndex === 0 ? (
         ""
+      ) : (
+        <SideBar currentStepIndex={currentStepIndex} goTo={goTo} />
       )}
       <main
-        className={`${showSuccessMsg ? "w-full" : "w-full md:mt-5 md:w-[65%]"}`}
+        className={`${showSuccessMsg || currentStepIndex === 0 ? "w-full" : "w-full md:mt-5 md:w-[65%]"}`}
       >
         {showSuccessMsg ? (
           <AnimatePresence mode="wait">
-            <SuccessMessage />
+            <SuccessMessage {...paymentData} />
           </AnimatePresence>
         ) : (
           <form
@@ -152,22 +209,27 @@ export default function Home() {
             className="w-full flex flex-col justify-between h-full"
           >
             <AnimatePresence mode="wait">
-              {currentStepIndex === 0 && (
+							{currentStepIndex === 0 && (
+								<Banner
+									key="step1"
+								/>
+							)}
+              {currentStepIndex === 1 && (
                 <UserInfoForm
-                  key="step1"
+                  key="step2"
                   {...formData}
                   updateForm={updateForm}
                   errors={errors}
                 />
               )}
-              {currentStepIndex === 1 && (
-                <PlanForm key="step2" {...formData} updateForm={updateForm} />
-              )}
               {currentStepIndex === 2 && (
-                <AddonsForm key="step3" {...formData} updateForm={updateForm} />
+                <SupportMessage key="step3" {...formData} updateForm={updateForm} />
               )}
               {currentStepIndex === 3 && (
-                <FinalStep key="step4" {...formData} goTo={goTo} />
+                <PaymentMethod key="step4" {...formData} updateForm={updateForm} />
+              )}
+              {currentStepIndex === 4 && (
+                <Summary key="step5" {...formData} goTo={goTo} />
               )}
             </AnimatePresence>
             <div className="w-full items-center flex justify-between">
@@ -188,10 +250,13 @@ export default function Home() {
               <div className="flex items-center">
                 <div className="relative after:pointer-events-none after:absolute after:inset-px after:rounded-[11px] after:shadow-highlight after:shadow-white/10 focus-within:after:shadow-[#77f6aa] after:transition">
                   <Button
+										disabled={loading || (isLastStep && (formData.name === "" || formData.email === "" || formData.userId === ""))}
                     type="submit"
                     className="relative text-neutral-200 bg-neutral-900 border border-black/20 shadow-input shadow-black/10 rounded-xl hover:text-white"
                   >
-                    {isLastStep ? "Confirm" : "Next Step"}
+										{loading ? 
+											<Loader className="w-6 h-6 animate-spin" /> : 
+                    		isLastStep ? "Confirm" : "Next Step"}
                   </Button>
                 </div>
               </div>
